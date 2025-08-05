@@ -1,18 +1,20 @@
 package cns.com.service;
 
+import java.io.IOException;
 import java.util.List;
 
+import cns.com.dto.EmployeeDto;
 import cns.com.model.Employee;
 
 public interface EmployeeService {
-	List<Employee> getAllEmployees();
+    Employee createEmployee(EmployeeDto employeeDto) throws IOException;
 
-	Employee getEmployeeById(Long empId);
+    Employee updateEmployee(long id,EmployeeDto employeeDto) throws IOException;
 
-	Employee createEmployee(Employee employee);
+    Employee getEmployeeById(long id);
 
-	Employee updateEmployee(Long empId, Employee employeeDetails);
+    List<Employee> getAllEmployees();
 
-	void deleteEmployee(Long empId);
+    void deleteEmployee(long id);
 
 }

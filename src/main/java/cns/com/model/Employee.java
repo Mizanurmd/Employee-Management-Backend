@@ -8,29 +8,46 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.sql.Date;
+
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "employee")
-public class Employee {
+public class Employee extends BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long empId;
+    // Basic Info
+    private String employeeName;
+    private String fatherName;
+    private String motherName;
+    private String gender;
+    private String designation;
+    private String address;
+    private String phone;
+    private String email;
+    private Date dateOfBirth;
+    private Date hireDate;
+    private String remarks;
+    private double salary;
+    private double bonus;
 
-	private String empName;
-	private String fname;
-	private String mname;
-	private String designation;
-	private String gender;
+    // Image Info
+    @Lob
+    private byte[] image;
+    private String imageName;
+    private String imageType;
+    private Long imageSize;
 
-	private double salary;
-	private String remarks;
-
-	@Lob
-	private byte[] pic;
+    // Active Flag Info
+    private boolean activeYn;
 
 }

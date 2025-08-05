@@ -1,7 +1,10 @@
 package cns.com.serviceimpl;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
+import cns.com.dto.EmployeeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,48 +12,103 @@ import cns.com.model.Employee;
 import cns.com.repository.EmployeeRepository;
 import cns.com.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
-	@Autowired
-	private EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
-	@Override
-	public List<Employee> getAllEmployees() {
-		System.out.println("Al employee"+ employeeRepository.findAll());
-		return employeeRepository.findAll();
-	}
+    @Autowired
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
 
-	@Override
-	public Employee getEmployeeById(Long empId) {
-		return employeeRepository.findById(empId)
-				.orElseThrow(() -> new RuntimeException("Employee not found with id " + empId));
-	}
+    @Override
+    public Employee createEmployee(EmployeeDto employeeDto) throws IOException {
+        Employee employee = new Employee();
+        // Basic Handling
+        employee.setEmployeeName(employeeDto.getEmployeeName());
+        employee.setFatherName(employeeDto.getFatherName());
+        employee.setMotherName(employeeDto.getMotherName());
+        employee.setDesignation(employeeDto.getDesignation());
+        employee.setGender(employeeDto.getGender());
+        employee.setAddress(employeeDto.getAddress());
+        employee.setPhone(employeeDto.getPhone());
+        employee.setEmail(employeeDto.getEmail());
+        employee.setDateOfBirth(employeeDto.getDateOfBirth());
+        employee.setHireDate(employeeDto.getHireDate());
+        employee.setRemarks(employeeDto.getRemarks());
+        employee.setSalary(employeeDto.getSalary());
+        employee.setBonus(employeeDto.getBonus());
 
-	@Override
-	public Employee createEmployee(Employee employee) {
-		return employeeRepository.save(employee);
-	}
+        // Image Handling
+        if (employeeDto.getImage() != null && !employeeDto.getImage().isEmpty()) {
+            MultipartFile image = employeeDto.getImage();
+            employee.setImage(image.getBytes());
+            employee.setImageName(image.getOriginalFilename());
+            employee.setImageType(image.getContentType());
+            employee.setImageSize(image.getSize());
 
-	@Override
-	public Employee updateEmployee(Long empId, Employee employeeDetails) {
-		Employee employee = getEmployeeById(empId);
-		employee.setEmpName(employeeDetails.getEmpName());
-		employee.setFname(employeeDetails.getFname());
-		employee.setMname(employeeDetails.getMname());
-		employee.setDesignation(employeeDetails.getDesignation());
-		employee.setGender(employeeDetails.getGender());
-		employee.setSalary(employeeDetails.getSalary());
-		employee.setRemarks(employeeDetails.getRemarks());
-		employee.setPic(employeeDetails.getPic());
-		return employeeRepository.save(employee);
-	}
+        }
 
-	@Override
-	public void deleteEmployee(Long empId) {
-		employeeRepository.deleteById(empId);
-	}
+        // Active Flag Handling
+        employee.setActiveYn(employeeDto.isActiveYn());
 
+        return employeeRepository.save(employee);
+    }
+
+    @Override
+    public Employee updateEmployee(long id, EmployeeDto employeeDto) throws IOException {
+        Optional<Employee> employeeId = employeeRepository.findById(id);
+        if (employeeId.isPresent()) {
+            Employee employee = employeeId.get();
+            employee.setEmployeeName(employeeDto.getEmployeeName());
+            employee.setFatherName(employeeDto.getFatherName());
+            employee.setMotherName(employeeDto.getMotherName());
+            employee.setDesignation(employeeDto.getDesignation());
+            employee.setGender(employeeDto.getGender());
+            employee.setAddress(employeeDto.getAddress());
+            employee.setPhone(employeeDto.getPhone());
+            employee.setEmail(employeeDto.getEmail());
+            employee.setDateOfBirth(employeeDto.getDateOfBirth());
+            employee.setHireDate(employeeDto.getHireDate());
+            employee.setRemarks(employeeDto.getRemarks());
+            employee.setSalary(employeeDto.getSalary());
+            employee.setBonus(employeeDto.getBonus());
+
+            // File Handling
+            if (employeeDto.getImage() != null && !employeeDto.getImage().isEmpty()) {
+                MultipartFile image = employeeDto.getImage();
+                employee.setImage(image.getBytes());
+                employee.setImageName(image.getOriginalFilename());
+                employee.setImageType(image.getContentType());
+                employee.setImageSize(image.getSize());
+
+            }
+
+            // Active Flag Handling
+            employee.setActiveYn(employeeDto.isActiveYn());
+            return employeeRepository.save(employee);
+        } else {
+            throw new RuntimeException("Employee with id " + id + " not found");
+        }
+
+    }
+
+    @Override
+    public Employee getEmployeeById(long id) {
+        return employeeRepository.findById(id).get();
+    }
+
+    @Override
+    public List<Employee> getAllEmployees() {
+        List<Employee> employeeList = employeeRepository.findAll();
+        return employeeList;
+    }
+
+    @Override
+    public void deleteEmployee(long id) {
+        employeeRepository.deleteById(id);
+    }
 }

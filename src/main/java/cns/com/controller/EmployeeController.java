@@ -6,6 +6,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import cns.com.dto.EmployeeDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,65 +28,52 @@ import cns.com.model.Employee;
 import cns.com.service.EmployeeService;
 
 @RestController
-@RequestMapping("/api/employees")
+@RequestMapping("/api/v1/employees")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class EmployeeController {
 
-	private final EmployeeService employeeService;
+    private final EmployeeService employeeService;
 
-	public EmployeeController(EmployeeService employeeService) {
-		super();
-		this.employeeService = employeeService;
-	}
+    @Autowired
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
 
-	@GetMapping
-	public List<Employee> getAllEmployees() {
-		System.out.println("Al employee" + employeeService.getAllEmployees());
-		return employeeService.getAllEmployees();
-	}
+    // Save Into DB Handler
+    @PostMapping("/save")
+    public ResponseEntity<Employee> saveEmployee(@ModelAttribute EmployeeDto employeeDto) throws IOException {
+        Employee employee = employeeService.createEmployee(employeeDto);
+        return new ResponseEntity<>(employee, HttpStatus.CREATED);
+    }
 
-	@GetMapping("/{empId}")
-	public Employee getEmployeeById(@PathVariable Long empId) {
-		return employeeService.getEmployeeById(empId);
-	}
+    // Update data handler
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Employee> updateEmployee(@PathVariable("id") long id, @ModelAttribute EmployeeDto employeeDto) throws IOException {
+        Employee employee = employeeService.updateEmployee(id, employeeDto);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
+    }
 
-	@PostMapping(consumes = "multipart/form-data")
-	public ResponseEntity<Employee> createEmployee(@RequestParam("empName") String empName,
-			@RequestParam("fname") String fname, @RequestParam("mname") String mname,
-			@RequestParam("designation") String designation, @RequestParam("gender") String gender,
-			@RequestParam("salary") double salary, @RequestParam("remarks") String remarks,
-			@RequestParam(value = "pic", required = false) MultipartFile pic) {
+    // Retrieve single data from DB Handler
 
-		Employee employee = new Employee();
-		employee.setEmpName(empName);
-		employee.setFname(fname);
-		employee.setMname(mname);
-		employee.setDesignation(designation);
-		employee.setGender(gender);
-		employee.setSalary(salary);
-		employee.setRemarks(remarks);
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getEmployee(@PathVariable("id") long id) throws IOException {
+        Employee employee = employeeService.getEmployeeById(id);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
+    }
 
-		if (pic != null && !pic.isEmpty()) { // Only set pic if present
-			try {
-				employee.setPic(pic.getBytes());
-			} catch (IOException e) {
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-			}
-		}
+    // Retrieve all data from DB Handler
+    @GetMapping("/all")
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        List<Employee> employees = employeeService.getAllEmployees();
+        return new ResponseEntity<>(employees, HttpStatus.OK);
+    }
 
-		Employee savedEmployee = employeeService.createEmployee(employee);
-		return ResponseEntity.ok(savedEmployee);
-	}
+    // Delete singe data from DB Handler
 
-	@PutMapping("/{empId}")
-	public Employee updateEmployee(@PathVariable Long empId, @RequestBody Employee employeeDetails) {
-		return employeeService.updateEmployee(empId, employeeDetails);
-	}
-
-	@DeleteMapping("/{empId}")
-	public String deleteEmployee(@PathVariable Long empId) {
-		employeeService.deleteEmployee(empId);
-		return "Employee deleted with id " + empId;
-	}
+    @DeleteMapping("/{id}")
+    public void deleteEmployee(@PathVariable("id") long id) throws IOException {
+        employeeService.deleteEmployee(id);
+    }
 
 }
+
